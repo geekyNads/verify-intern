@@ -1,4 +1,5 @@
-# VerifyIntern (working name)
+# VerifyIntern 
+(currently not maintained but fell free to make issues and PRs)
 
 **An legitimacy checker for internship and job offers.**
 
