@@ -1,0 +1,14 @@
+The dataset in /data (flagged_employers/*.jsonl, scam_patterns/*.jsonl) is
+licensed under Creative Commons Attribution-ShareAlike 4.0 International
+(CC BY-SA 4.0): https://creativecommons.org/licenses/by-sa/4.0/
+
+This means: you may use, share, and adapt this dataset, including
+commercially, as long as you give appropriate credit and license any
+derivative dataset under the same terms. The intent is specifically to stop
+a closed commercial fork from taking the community-contributed data private
+— any product built on top of a modified version of this dataset must keep
+its version of the dataset open too.
+
+Each individual record also carries its own `sources` field citing where
+the underlying fact came from (an advisory, a publication, a community
+report) — that attribution should be preserved wherever the data is reused.

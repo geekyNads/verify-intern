@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VerifyIntern — a public register of internship scam reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EEE6;
+    --ink:#21252B;
+    --ink-soft:#5B5747;
+    --stamp-red:#9C3B2C;
+    --ledger-green:#3B6255;
+    --rule:#D3CDBC;
+    --paper-raised:#FBF9F4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:48px 24px 96px;}
+
+  header.masthead{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:8px;}
+  .reg-no{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink-soft);letter-spacing:.02em;}
+  h1.title{
+    font-family:'Lora',serif;font-weight:600;font-style:italic;
+    font-size:clamp(28px,5vw,40px);margin:6px 0 8px;letter-spacing:-0.01em;
+  }
+  .dek{color:var(--ink-soft);font-size:15px;max-width:56ch;}
+
+  .api-row{display:flex;gap:8px;align-items:center;margin:20px 0 40px;font-size:13px;color:var(--ink-soft);}
+  .api-row input{
+    font-family:'Space Mono',monospace;font-size:12px;flex:1;
+    background:var(--paper-raised);border:1px solid var(--rule);padding:6px 8px;color:var(--ink);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--rule);flex-shrink:0;}
+  .dot.ok{background:var(--ledger-green);}
+  .dot.bad{background:var(--stamp-red);}
+
+  section{margin-bottom:44px;}
+  h2.section-title{
+    font-family:'Lora',serif;font-weight:600;font-size:19px;
+    display:flex;align-items:baseline;gap:10px;margin:0 0 14px;
+  }
+  h2.section-title .n{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink-soft);}
+
+  label{display:block;font-size:13px;color:var(--ink-soft);margin-bottom:6px;}
+  input[type=text], textarea{
+    width:100%;font-family:'Inter',sans-serif;font-size:15px;color:var(--ink);
+    background:var(--paper-raised);border:1px solid var(--rule);padding:10px 12px;
+  }
+  textarea{min-height:120px;resize:vertical;}
+  input[type=text]:focus, textarea:focus{outline:2px solid var(--ink);outline-offset:1px;}
+
+  button{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:14px;cursor:pointer;
+    background:var(--ink);color:var(--paper);border:none;padding:10px 18px;border-radius:3px;
+    margin-top:10px;
+  }
+  button:hover{background:var(--stamp-red);}
+  button:disabled{opacity:.5;cursor:default;}
+
+  .result{margin-top:20px;border:1px solid var(--rule);background:var(--paper-raised);padding:18px 20px;}
+  .verdict{
+    font-family:'Lora',serif;font-weight:600;font-style:italic;font-size:20px;
+    display:inline-block;padding:4px 10px;border:2px solid currentColor;transform:rotate(-1deg);
+  }
+  .verdict.high, .verdict.medium{color:var(--stamp-red);}
+  .verdict.low{color:#8a6b1f;}
+  .verdict.none{color:var(--ledger-green);}
+  .explain{margin-top:12px;color:var(--ink-soft);font-size:14px;}
+
+  .entry{border-top:1px solid var(--rule);padding:14px 0;}
+  .entry:first-child{border-top:none;}
+  .entry-name{font-weight:600;}
+  .status-tag{
+    font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;
+    padding:2px 6px;border-radius:2px;margin-left:8px;position:relative;top:-1px;
+  }
+  .status-tag.confirmed{background:var(--stamp-red);color:var(--paper);}
+  .status-tag.reported{background:var(--rule);color:var(--ink);}
+  .status-tag.disputed{background:#8a6b1f;color:var(--paper);}
+  .src-list{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft);}
+  .src-list a{color:var(--ink-soft);}
+  .hint-list{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-soft);}
+  .empty{color:var(--ink-soft);font-size:14px;font-style:italic;}
+
+  footer{border-top:1px solid var(--rule);margin-top:56px;padding-top:18px;font-size:12px;color:var(--ink-soft);}
+  footer a{color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="reg-no">PUBLIC REGISTER · OPEN SOURCE · SOURCE-BACKED ONLY</div>
+    <h1 class="title">VerifyIntern</h1>
+    <p class="dek">Paste an offer or check a company name against a transparent, community-maintained
+    register of reported internship and employer scams. Every result shows the source it came from —
+    nothing here is a black-box verdict.</p>
+  </header>
+
+  <div class="api-row">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">checking API…</span>
+    <input type="text" id="apiBase" value="http://127.0.0.1:8000" spellcheck="false">
+  </div>
+
+  <section>
+    <h2 class="section-title">Check an offer <span class="n">/check</span></h2>
+    <label for="checkText">Paste the offer email, message, or letter text</label>
+    <textarea id="checkText" placeholder="e.g. Congratulations! You've been selected... pay a refundable registration fee via UPI to confirm your seat..."></textarea>
+    <button id="checkBtn">Check for known scam patterns</button>
+    <div id="checkResult"></div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Look up a company or domain <span class="n">/lookup</span></h2>
+    <label for="lookupQuery">Company name or domain</label>
+    <input type="text" id="lookupQuery" placeholder="e.g. Launched Global, or aictetindia.org">
+    <button id="lookupBtn">Search the register</button>
+    <div id="lookupResult"></div>
+  </section>
+
+  <section>
+    <h2 class="section-title">Report a suspected scam <span class="n">/report</span></h2>
+    <label for="reportCompany">Company name</label>
+    <input type="text" id="reportCompany" placeholder="Company or sender name">
+    <label for="reportDomain" style="margin-top:12px;">Domain (optional)</label>
+    <input type="text" id="reportDomain" placeholder="example-careers.com">
+    <label for="reportReason" style="margin-top:12px;">What happened?</label>
+    <textarea id="reportReason" placeholder="Describe what made this look like a scam, and include a link to any evidence if you have one."></textarea>
+    <label for="reportEvidence" style="margin-top:12px;">Evidence link (optional)</label>
+    <input type="text" id="reportEvidence" placeholder="Screenshot, forum thread, advisory, etc.">
+    <button id="reportBtn">Submit for review</button>
+    <div id="reportResult"></div>
+    <p style="font-size:13px;color:var(--ink-soft);margin-top:10px;">
+      Reports are queued for human review, not published automatically —
+      see <code>CONTRIBUTING.md</code>.
+    </p>
+  </section>
+
+  <footer>
+    Open dataset, open logic, open to correction.
+    <a href="https://github.com" target="_blank" rel="noopener">Source & dataset on GitHub</a> ·
+    Every record on this page cites a public source — see the register entries above.
+  </footer>
+
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const apiBaseInput = $('apiBase');
+const statusDot = $('statusDot');
+const statusText = $('statusText');
+
+function apiBase(){ return apiBaseInput.value.replace(/\/$/, ''); }
+
+async function checkHealth(){
+  try{
+    const res = await fetch(apiBase() + '/health');
+    if(!res.ok) throw new Error('bad status');
+    const data = await res.json();
+    statusDot.className = 'dot ok';
+    statusText.textContent = `connected · ${data.flagged_employers} flagged records · ${data.scam_patterns} patterns`;
+  }catch(e){
+    statusDot.className = 'dot bad';
+    statusText.textContent = 'API not reachable — run "uvicorn api.main:app" locally, or edit the URL →';
+  }
+}
+apiBaseInput.addEventListener('change', checkHealth);
+checkHealth();
+
+function escapeHtml(s){
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function sourceLine(src){
+  const label = src.url
+    ? `<a href="${escapeHtml(src.url)}" target="_blank" rel="noopener">${escapeHtml(src.title)}</a>`
+    : escapeHtml(src.title);
+  return `<li>${label} <span style="opacity:.7">(${escapeHtml(src.type)}, ${escapeHtml(src.date)})</span></li>`;
+}
+
+function employerEntry(emp){
+  const sources = emp.sources.map(sourceLine).join('');
+  const imp = emp.impersonating ? ` — impersonating <strong>${escapeHtml(emp.impersonating)}</strong>` : '';
+  return `
+    <div class="entry">
+      <span class="entry-name">${escapeHtml(emp.company_name)}</span>
+      <span class="status-tag ${emp.status}">${emp.status}</span>
+      <div style="margin-top:6px;">${escapeHtml(emp.summary)}${imp}</div>
+      <ul class="src-list">${sources}</ul>
+    </div>`;
+}
+
+$('lookupBtn').addEventListener('click', async () => {
+  const q = $('lookupQuery').value.trim();
+  const out = $('lookupResult');
+  if(!q){ out.innerHTML = '<p class="empty">Enter a company name or domain first.</p>'; return; }
+  out.innerHTML = '<p class="empty">Searching…</p>';
+  try{
+    const res = await fetch(apiBase() + '/lookup?query=' + encodeURIComponent(q));
+    const data = await res.json();
+    if(!data.found){
+      out.innerHTML = '<p class="empty">No match in the current register. That is not a guarantee of legitimacy — it only means nothing here matched.</p>';
+      return;
+    }
+    out.innerHTML = '<div class="result">' + data.matches.map(employerEntry).join('') + '</div>';
+  }catch(e){
+    out.innerHTML = '<p class="empty">Could not reach the API. Check the URL above.</p>';
+  }
+});
+
+$('checkBtn').addEventListener('click', async () => {
+  const text = $('checkText').value.trim();
+  const out = $('checkResult');
+  if(!text){ out.innerHTML = '<p class="empty">Paste some offer text first.</p>'; return; }
+  out.innerHTML = '<p class="empty">Checking…</p>';
+  try{
+    const res = await fetch(apiBase() + '/check', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({text})
+    });
+    const data = await res.json();
+    let html = `<div class="result"><span class="verdict ${data.confidence}">`;
+    html += data.confidence === 'none' ? 'no known patterns matched' : `${data.confidence} concern`;
+    html += `</span><div class="explain">${escapeHtml(data.explanation)}</div>`;
+    if(data.matched_patterns.length){
+      html += data.matched_patterns.map(m => `
+        <div class="entry">
+          <span class="entry-name">${escapeHtml(m.pattern.name)}</span>
+          <span class="status-tag reported">${escapeHtml(m.pattern.severity)}</span>
+          <div style="margin-top:6px;">${escapeHtml(m.pattern.description)}</div>
+          <ul class="hint-list">matched: ${m.matched_hints.map(escapeHtml).join(', ')}</ul>
+          <ul class="src-list">${m.pattern.sources.map(sourceLine).join('')}</ul>
+        </div>`).join('');
+    }
+    if(data.matched_employers.length){
+      html += data.matched_employers.map(employerEntry).join('');
+    }
+    html += '</div>';
+    out.innerHTML = html;
+  }catch(e){
+    out.innerHTML = '<p class="empty">Could not reach the API. Check the URL above.</p>';
+  }
+});
+
+$('reportBtn').addEventListener('click', async () => {
+  const company_name = $('reportCompany').value.trim();
+  const domain = $('reportDomain').value.trim() || null;
+  const reason = $('reportReason').value.trim();
+  const evidence_url = $('reportEvidence').value.trim() || null;
+  const out = $('reportResult');
+  if(!company_name || reason.length < 10){
+    out.innerHTML = '<p class="empty">Please add a company name and at least a sentence describing what happened.</p>';
+    return;
+  }
+  out.innerHTML = '<p class="empty">Submitting…</p>';
+  try{
+    const res = await fetch(apiBase() + '/report', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({company_name, domain, reason, evidence_url})
+    });
+    const data = await res.json();
+    out.innerHTML = `<p class="empty">${escapeHtml(data.message)} (reference: ${escapeHtml(data.id)})</p>`;
+  }catch(e){
+    out.innerHTML = '<p class="empty">Could not reach the API. Check the URL above.</p>';
+  }
+});
+</script>
+</body>
+</html>
