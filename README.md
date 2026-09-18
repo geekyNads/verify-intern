@@ -1,6 +1,6 @@
 # VerifyIntern (working name)
 
-**An open, community-maintained legitimacy checker for internship and job offers.**
+**An legitimacy checker for internship and job offers.**
 
 Students and early-career job seekers get flooded with fake internship offers,
 "registration fee" scams, and impersonated-employer schemes. VerifyIntern lets
