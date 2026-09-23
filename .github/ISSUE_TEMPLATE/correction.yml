@@ -1,0 +1,38 @@
+name: Dispute or correct an entry
+description: You believe a record in the register is wrong, out of date, or unfair to a real company.
+title: "Correction: "
+labels: ["correction", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Corrections are taken as seriously as reports. If a legitimate business has been listed
+        in error, that is a failure of this project and we want to fix it quickly.
+
+  - type: input
+    id: record_id
+    attributes:
+      label: Which record?
+      description: The record id, shown in the register (for example fe_2026_0001), or the company name.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is wrong with it?
+      options:
+        - "The company is legitimate and should not be listed"
+        - "The details are inaccurate"
+        - "The source link is dead or does not say this"
+        - "It is out of date — the situation has been resolved"
+        - "Something else"
+    validations:
+      required: true
+
+  - type: textarea
+    id: explanation
+    attributes:
+      label: What should it say instead, and what is your evidence?
+    validations:
+      required: true

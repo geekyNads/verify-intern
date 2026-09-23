@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: You have already lost money
+    url: https://cybercrime.gov.in
+    about: Report it as fraud first. In India use cybercrime.gov.in or the 1930 helpline; elsewhere, your local police and your bank. Then come back and file a report here.
+  - name: How the register works
+    url: https://github.com/topics/scam-detection
+    about: Read CONTRIBUTING.md and docs/DATA_SCHEMA.md in this repository before proposing dataset changes.

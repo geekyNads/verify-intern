@@ -1,0 +1,24 @@
+# Run once after forking: Actions tab -> "Set up labels" -> Run workflow.
+# Creates the labels the report forms and the review workflow rely on.
+name: Set up labels
+
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  labels:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh label create scam-report        --repo "$REPO" --force --color B60205 --description "Community report of a suspected scam"
+          gh label create needs-review       --repo "$REPO" --force --color FBCA04 --description "Waiting for a maintainer"
+          gh label create approved           --repo "$REPO" --force --color 0E8A16 --description "Add to register as 'reported' (opens a PR)"
+          gh label create approved-confirmed --repo "$REPO" --force --color 006B3F --description "Add to register as 'confirmed' (opens a PR; needs official/news link)"
+          gh label create correction         --repo "$REPO" --force --color 5319E7 --description "Correction or dispute of a listing"
+          gh label create NEEDS-REVIEW       --repo "$REPO" --force --color D93F0B --description "Uncertain change touching who gets flagged or what counts as a source"

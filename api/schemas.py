@@ -52,16 +52,29 @@ class LookupResult(BaseModel):
     found: bool
 
 
+class Register(BaseModel):
+    """The whole public dataset, as served to the static frontend."""
+
+    flagged_employers: list[FlaggedEmployer]
+    scam_patterns: list[ScamPattern]
+
+
 class MatchedPattern(BaseModel):
     pattern: ScamPattern
     matched_hints: list[str]
+
+
+class CheckRequest(BaseModel):
+    text: str = Field(..., min_length=1, description="The offer email, message or letter to check")
 
 
 class CheckResult(BaseModel):
     matched_patterns: list[MatchedPattern]
     matched_employers: list[FlaggedEmployer]
     confidence: Literal["none", "low", "medium", "high"]
+    score: int = Field(0, ge=0, le=100, description="0-100 display score; `confidence` is authoritative")
     explanation: str
+    advice: list[str] = Field(default_factory=list, description="General verification steps, not record-specific")
 
 
 class ReportSubmission(BaseModel):

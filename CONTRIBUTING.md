@@ -6,14 +6,35 @@ don't need to write code.
 
 ## Reporting a suspected scam internship/employer
 
-1. Use the in-app "Report" form if it's live, or open an issue using the
-   `scam-report` template.
-2. Include: company/domain name, what made it suspicious, and — critically —
-   a link to evidence (a screenshot, an advisory, a forum thread, a news
-   article). Reports without any linkable evidence go into `reported` status
-   only and may not surface prominently until corroborated.
-3. Do not name a private individual as the fraudster unless a public source
-   already does.
+You do not need a local copy of anything, and you do not need to understand
+the code. Two ways in:
+
+- Use the **Report a scam** form on the site. It opens a pre-filled GitHub
+  issue for you.
+- Or open an issue directly with the **Report a suspected scam** template.
+
+What makes a report usable:
+1. Company or domain name, what they asked you for, and what made it look
+   wrong.
+2. A link to evidence — a screenshot, an advisory, a forum thread, a news
+   article. Reports with no linkable evidence stay in `reported` status and
+   may never be promoted to `confirmed`.
+3. No private individual named as the fraudster unless a public source has
+   already done so. Flags attach to companies, domains and patterns.
+4. Your own personal details removed. Issues are public.
+
+### Reviewing a report (maintainers)
+
+Open the source link and confirm it says what the report claims. Then add the
+record — for a one-line addition you can use GitHub's own file editor in the
+browser, no clone required:
+
+1. Open `data/flagged_employers/flagged_employers.jsonl`, press the pencil icon.
+2. Add one JSON object on its own line, following `docs/DATA_SCHEMA.md`.
+3. Commit to a new branch and open a pull request.
+
+CI validates the schema, the sourcing rules and the classifier on every pull
+request, so a malformed or unsourced record fails before it can be merged.
 
 ## Contributing code
 
@@ -24,8 +45,19 @@ don't need to write code.
 3. If your change touches `/data`, it must go through `/data/_pending/` and
    the review checklist in the PR template — no direct edits to canonical
    files.
-4. If your change touches `/api` classification logic, add a test pinning
-   expected output for one known-scam and one known-legitimate example.
+4. If your change touches classification logic, change **both**
+   `api/classifier.py` and `web/classifier.js` — the browser is what students
+   actually use, and CI fails if the two disagree. Add a case to
+   `tests/fixtures/classifier_cases.json` covering one known-scam and one
+   known-legitimate example.
+
+Before opening a PR:
+
+```bash
+python tools/validate_data.py
+python -m pytest api/tests -q
+node tools/check_parity.cjs
+```
 
 ## Adding a new ingestion source
 

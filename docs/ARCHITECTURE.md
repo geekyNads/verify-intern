@@ -20,12 +20,61 @@
                 └──────┬──────┘
                        │
                        v
-                ┌─────────────┐        ┌─────────────┐
-                │   api/       │<──────>│   web/       │
-                │ lookup +     │        │ lookup UI +  │
-                │ classifier   │        │ submit form  │
-                └─────────────┘        └─────────────┘
+        ┌───────────────┴───────────────┐
+        │                               │
+        v                               v
+┌───────────────┐               ┌───────────────┐
+│  web/         │               │  api/         │
+│  classifier.js│               │  classifier.py│
+│  runs in the  │               │  optional     │
+│  student's    │               │  service for  │
+│  browser      │               │  integrators  │
+└───────┬───────┘               └───────────────┘
+        │  built by tools/build_site.py
+        v
+┌───────────────┐
+│ GitHub Pages  │  the thing a student actually opens
+└───────────────┘
 ```
+
+## Why the rules exist twice
+
+The single most important property of this project is that a student with no
+technical background can check an offer in under a minute. That rules out
+"install Python, create a virtualenv, run two servers". So the classifier is
+implemented twice: once in `web/classifier.js`, which runs client-side with
+the dataset bundled in, and once in `api/classifier.py` for the optional
+service.
+
+Duplicated logic normally rots. The guard is
+`tests/fixtures/classifier_cases.json`: the same cases run through the Python
+implementation under pytest and through the JavaScript one under
+`node tools/check_parity.cjs`, and CI fails on any divergence. If you change
+the rules in one language and not the other, the build breaks before anyone
+gets a wrong answer.
+
+A secondary benefit: because the page never sends the pasted text anywhere,
+there is no server log of what students paste. For a tool whose users are
+often sending screenshots of their own offer letters, that is a feature, not
+an implementation detail.
+
+## Confidence bands
+
+`confidence` is the authoritative output; `score` (0-100) exists only to draw a
+bar and must never contradict the band. The rules, in order:
+
+| Band | Condition |
+| --- | --- |
+| `high` | a flagged employer is named, **or** two high-severity patterns matched, **or** one high-severity pattern plus any second pattern |
+| `medium` | one high-severity pattern alone, **or** two or more patterns of any severity |
+| `low` | a single pattern of medium or low severity |
+| `none` | nothing matched |
+
+The asymmetry is deliberate. A lone high-severity hit stays at `medium` so that
+one unlucky phrase in a real offer letter cannot brand a legitimate employer a
+scam; once a second marker corroborates it, the combination is rarely innocent.
+Raising `high` is the change most likely to harm someone who has done nothing
+wrong, so it needs corroboration.
 
 ## Components
 
@@ -54,8 +103,26 @@ Canonical, versioned dataset. This is the actual asset. JSONL, one file per
 category, schema in `DATA_SCHEMA.md`. Changes go through normal git history
 so the provenance of every record is auditable.
 
+### `/web`
+A single static page plus `classifier.js`. No framework, no build step, no
+runtime dependency beyond a webfont. It loads the register from `data.json`
+(bundled at build time), falling back to the raw JSONL files when served from
+the repository root, or from an inlined copy in the single-file offline build.
+
+### `/tools`
+Standard-library-only scripts, so a contributor with a bare Python install can
+run all of them:
+
+| Script | Purpose |
+| --- | --- |
+| `build_site.py` | bundles `site/` for Pages, plus a single-file offline build |
+| `serve.py` | builds and serves locally, opens a browser — the one-command path |
+| `validate_data.py` | schema and sourcing rules; runs on every PR |
+| `check_parity.cjs` | proves the JS rules match the Python rules |
+| `test_ui.cjs` | drives the built page in a headless DOM |
+
 ### `/api`
-Thin service exposing:
+Optional. Thin service exposing:
 - `GET /lookup?domain=` or `?company=` — returns matching flagged-employer
   records with sources.
 - `POST /check` — takes offer text, runs pattern matching against

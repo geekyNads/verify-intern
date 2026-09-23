@@ -1,0 +1,86 @@
+name: Report a suspected scam
+description: Tell us about a fake internship or job offer so it can be reviewed and added to the register.
+title: "Scam report: "
+labels: ["scam-report", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A maintainer reviews every report against the evidence before
+        anything goes into the public register, so nothing you write here is published as fact.
+
+        Two rules, and they are the reason this project can be trusted:
+
+        - **Name companies, domains and patterns — not private individuals.** If a recruiter gave
+          you a name, leave it out unless a public advisory or news report has already named them.
+        - **Evidence matters more than certainty.** A screenshot, a link, a message you can quote
+          is worth more than a strong conviction.
+
+  - type: input
+    id: company
+    attributes:
+      label: Company or sender name
+      description: Who did the offer claim to be from?
+      placeholder: Example Talent Solutions
+    validations:
+      required: true
+
+  - type: input
+    id: domain
+    attributes:
+      label: Website or email domain
+      description: The bare domain, without https:// — for example example-careers.com
+      placeholder: example-careers.com
+    validations:
+      required: false
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: What did they ask you for, and what made it look wrong? Your own words are fine.
+      placeholder: |
+        They said I'd been selected without any interview, then asked for a refundable
+        registration fee paid to a personal UPI ID, with a deadline of 24 hours.
+    validations:
+      required: true
+
+  - type: input
+    id: evidence
+    attributes:
+      label: Link to evidence
+      description: An advisory, a news article, a forum thread, or a screenshot you can upload below.
+      placeholder: https://…
+    validations:
+      required: false
+
+  - type: dropdown
+    id: impersonation
+    attributes:
+      label: Did they claim to be, or be connected to, a well-known institution?
+      options:
+        - "No"
+        - "Yes — a university or institute"
+        - "Yes — a government body"
+        - "Yes — a known company"
+        - "Not sure"
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else
+      description: Drag images in here. Please black out your own phone number, email and ID numbers first.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have not named a private individual as a fraudster.
+          required: true
+        - label: I understand this is a public issue, and I have removed my own personal details from anything I pasted.
+          required: true

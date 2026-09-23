@@ -1,0 +1,147 @@
+{
+  "_comment": "Shared fixtures. Run through api/classifier.py (pytest) and web/classifier.js (node tools/check_parity.cjs). If the two disagree, CI fails — the static site and the API must never give a student different answers.",
+  "check_cases": [
+    {
+      "name": "classic paid-internship scam message",
+      "text": "Congratulations! You have been selected for our Summer Internship Program, in association with IIT, only 3 seats left - offer closes in 24 hours. To confirm your seat, please pay a refundable registration fee of Rs. 499 via the UPI QR code below and fill out this form with your register number.",
+      "expect": {
+        "confidence": "high",
+        "pattern_ids": [
+          "sp_0001",
+          "sp_0004",
+          "sp_0005",
+          "sp_0006"
+        ],
+        "employer_ids": []
+      }
+    },
+    {
+      "name": "ordinary legitimate interview invitation",
+      "text": "Thank you for applying to the Software Engineering Internship at Acme Corp. We would like to invite you for a technical interview on Monday at 10am via our official careers portal. No payment is required at any stage of our recruitment process. Please confirm your availability by replying to this email from careers@acme-corp.com.",
+      "expect": {
+        "confidence": "none",
+        "pattern_ids": [],
+        "employer_ids": []
+      }
+    },
+    {
+      "name": "names a flagged lookalike domain",
+      "text": "Please complete your onboarding formalities at aictetindia.org before Friday.",
+      "expect": {
+        "confidence": "high",
+        "pattern_ids": [
+          "sp_0002"
+        ],
+        "employer_ids": [
+          "fe_2021_0002"
+        ]
+      }
+    },
+    {
+      "name": "curly quotes and odd spacing still match",
+      "text": "Kindly pay the  registration   fee today — we’ve got limited seats for this batch.",
+      "expect": {
+        "confidence": "high",
+        "pattern_ids": [
+          "sp_0001",
+          "sp_0005"
+        ],
+        "employer_ids": []
+      }
+    },
+    {
+      "name": "empty input matches nothing",
+      "text": "",
+      "expect": {
+        "confidence": "none",
+        "pattern_ids": [],
+        "employer_ids": []
+      }
+    },
+    {
+      "name": "word-boundary guard: 'fees' alone is not the 'fee' hint",
+      "text": "Our tuition fees page explains the course structure and the faculty.",
+      "expect": {
+        "confidence": "none",
+        "pattern_ids": [],
+        "employer_ids": []
+      }
+    },
+    {
+      "name": "task scam: small payouts then a deposit to withdraw",
+      "text": "Simple work from home! Just do product boosting tasks in our app. You will see your commission with every click. To withdraw your earnings you only need to charge up your account with USDT first.",
+      "expect": {
+        "confidence": "high",
+        "pattern_ids": [
+          "sp_0007",
+          "sp_0008"
+        ],
+        "employer_ids": []
+      }
+    },
+    {
+      "name": "crypto mentioned alone is a prompt to verify, not a verdict",
+      "text": "Your monthly stipend will be settled in USDT at the end of each month.",
+      "expect": {
+        "confidence": "low",
+        "pattern_ids": [
+          "sp_0008"
+        ],
+        "employer_ids": []
+      }
+    },
+    {
+      "name": "a real social media internship is not a task scam",
+      "text": "As our social media intern you will schedule posts, draft captions and report on engagement each week. Paid monthly by bank transfer.",
+      "expect": {
+        "confidence": "none",
+        "pattern_ids": [],
+        "employer_ids": []
+      }
+    }
+  ],
+  "lookup_cases": [
+    {
+      "query": "Launched Global",
+      "expect_ids": [
+        "fe_2026_0001"
+      ]
+    },
+    {
+      "query": "launched global",
+      "expect_ids": [
+        "fe_2026_0001"
+      ]
+    },
+    {
+      "query": "aictetindia.org",
+      "expect_ids": [
+        "fe_2021_0002"
+      ]
+    },
+    {
+      "query": "https://www.aictetindia.org/careers",
+      "expect_ids": [
+        "fe_2021_0002"
+      ]
+    },
+    {
+      "query": "hr@aicstd.com",
+      "expect_ids": [
+        "fe_2021_0002"
+      ]
+    },
+    {
+      "query": "Some Totally Unremarkable Real Company Pvt Ltd",
+      "expect_ids": []
+    },
+    {
+      "query": "a",
+      "expect_ids": []
+    },
+    {
+      "query": "  ",
+      "expect_ids": []
+    }
+  ]
+}

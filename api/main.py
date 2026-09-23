@@ -1,10 +1,18 @@
 """VerifyIntern API.
 
 Endpoints:
-  GET  /lookup?query=       -> known flagged employers/domains matching query
-  POST /check                -> pattern-match free text (an offer/email body)
+  GET  /health                -> dataset counts
+  GET  /register              -> the whole dataset (what the static UI loads)
+  GET  /patterns              -> scam patterns only
+  GET  /employers             -> flagged employer records only
+  GET  /lookup?query=         -> flagged employers/domains matching a query
+  POST /check                 -> pattern-match free text (an offer/email body)
   POST /report                -> submit a suspected scam for human review
-  GET  /health
+
+This API is OPTIONAL. The site in /web runs the identical rules client-side
+(see web/classifier.js) so students can use the tool with nothing installed.
+The API exists for integrators: university placement portals, bots, bulk
+checks.
 
 Nothing here auto-publishes a community report into the canonical dataset —
 per ARCHITECTURE.md, /report only ever writes to data/_pending/ for review.
@@ -20,7 +28,16 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from .classifier import get_dataset
-from .schemas import CheckResult, LookupResult, ReportAck, ReportSubmission
+from .schemas import (
+    CheckRequest,
+    CheckResult,
+    FlaggedEmployer,
+    LookupResult,
+    Register,
+    ReportAck,
+    ReportSubmission,
+    ScamPattern,
+)
 
 app = FastAPI(
     title="VerifyIntern API",
@@ -59,15 +76,29 @@ def lookup(query: str = Query(..., min_length=1, description="Company name or do
     return LookupResult(query=query, matches=matches, found=bool(matches))
 
 
-class CheckRequest(dict):
-    """Accepts {"text": "..."} — kept as a thin wrapper to avoid an extra import cycle."""
-
-
 @app.post("/check", response_model=CheckResult)
-def check(payload: dict) -> CheckResult:
-    text = payload.get("text", "")
+def check(payload: CheckRequest) -> CheckResult:
+    """Pattern-match a pasted offer. The request body is not stored anywhere."""
+    return get_dataset().check_text(payload.text)
+
+
+@app.get("/register", response_model=Register)
+def register() -> Register:
+    """The whole public dataset in one response — this is what the static
+    frontend loads when it is pointed at a running API instead of at the
+    JSONL files it ships with."""
     ds = get_dataset()
-    return ds.check_text(text)
+    return Register(flagged_employers=ds.flagged_employers, scam_patterns=ds.scam_patterns)
+
+
+@app.get("/patterns", response_model=list[ScamPattern])
+def patterns() -> list[ScamPattern]:
+    return get_dataset().scam_patterns
+
+
+@app.get("/employers", response_model=list[FlaggedEmployer])
+def employers() -> list[FlaggedEmployer]:
+    return get_dataset().flagged_employers
 
 
 @app.post("/report", response_model=ReportAck)

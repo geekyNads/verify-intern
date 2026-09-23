@@ -1,0 +1,66 @@
+name: Report a suspected scam
+description: Tell us about a fake internship or job offer. No coding needed.
+title: "[Scam report]: "
+labels: ["scam-report", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping other students. **This issue is public**, so please:
+        - Don't include your own phone number, email, ID numbers, or address.
+        - Blur personal details in any screenshots you attach.
+        - Don't name a private person as a fraudster — report the company, website, or message instead.
+
+        A maintainer will review this before anything is added to the public register.
+  - type: input
+    id: company
+    attributes:
+      label: Company or sender name
+      description: The name used in the offer, email, or message.
+      placeholder: e.g. Bright Future Internships
+    validations:
+      required: true
+  - type: input
+    id: domain
+    attributes:
+      label: Website, email address, or domain they used
+      description: Optional. Paste the sender's email or the website link — we'll pull out the domain.
+      placeholder: e.g. hr@brightfuture-careers.com
+  - type: input
+    id: impersonating
+    attributes:
+      label: Did they claim to be (or be linked to) a real college, company, or government body?
+      description: Optional. e.g. "Said it was in association with IIT Bombay"
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: In your own words — what did they ask for, and what made it look like a scam? You can drag screenshots into this box.
+    validations:
+      required: true
+  - type: dropdown
+    id: evidence-type
+    attributes:
+      label: What evidence can you link to?
+      options:
+        - An official warning (college, AICTE, government, or the real company)
+        - A news article
+        - A public post, forum thread, or screenshot
+        - No public link — this is my own experience
+    validations:
+      required: true
+  - type: input
+    id: evidence-url
+    attributes:
+      label: Link to the evidence
+      description: Optional, but reports with a public link are much more likely to be added.
+      placeholder: https://
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have removed my own personal details from this report.
+          required: true
+        - label: I am reporting a company, website, or message — not naming a private individual.
+          required: true

@@ -1,0 +1,41 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Runs first: a dataset problem is the most consequential kind of bug here.
+      - name: Validate the dataset
+        run: python tools/validate_data.py
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the Python test suite
+        run: python -m pytest api/tests -q
+
+      # The site and the API must never disagree about the same message.
+      - name: Check browser/API rule parity
+        run: node tools/check_parity.cjs
+
+      - name: Build the site
+        run: python tools/build_site.py
+
+      - name: Test the page in a headless browser
+        run: |
+          npm install jsdom --no-save --silent
+          node tools/test_ui.cjs

@@ -1,0 +1,77 @@
+# When a maintainer labels a scam-report issue, turn it into a pull request.
+#   label "approved"            -> record added with status "reported"
+#   label "approved-confirmed"  -> record added with status "confirmed"
+#                                  (needs an official/news link, else it fails with a comment)
+# One-time setup: Settings -> Actions -> General -> Workflow permissions ->
+#   tick "Allow GitHub Actions to create and approve pull requests".
+name: Turn approved report into a pull request
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  create-pr:
+    if: >-
+      (github.event.label.name == 'approved' || github.event.label.name == 'approved-confirmed')
+      && contains(github.event.issue.labels.*.name, 'scam-report')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      # Issue text is untrusted: it is passed through environment variables and a
+      # file, never pasted into a shell command.
+      - name: Build record from issue
+        id: build
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          LABEL: ${{ github.event.label.name }}
+        run: |
+          printf '%s' "$ISSUE_BODY" > "$RUNNER_TEMP/issue.md"
+          CONFIRM=""
+          if [ "$LABEL" = "approved-confirmed" ]; then CONFIRM="--confirm"; fi
+          set +e
+          python -m scraper.from_issue --body-file "$RUNNER_TEMP/issue.md" \
+            --issue-number "$ISSUE_NUMBER" --issue-url "$ISSUE_URL" \
+            --result-file "$RUNNER_TEMP/result.md" $CONFIRM
+          RC=$?
+          if [ $RC -eq 0 ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Explain the problem on the issue
+        if: steps.build.outputs.ok != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body-file "$RUNNER_TEMP/result.md"
+          exit 1
+
+      - name: Open pull request
+        if: steps.build.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          BRANCH="report/issue-$ISSUE_NUMBER"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/flagged_employers/flagged_employers.jsonl
+          git commit -m "data: add record from community report #$ISSUE_NUMBER"
+          git push --force origin "$BRANCH"
+          { cat "$RUNNER_TEMP/result.md"; printf '\n\nCloses #%s\n' "$ISSUE_NUMBER"; } > "$RUNNER_TEMP/pr.md"
+          gh pr create --base "$BASE" --head "$BRANCH" \
+            --title "Add record from community report #$ISSUE_NUMBER" --body-file "$RUNNER_TEMP/pr.md"
+          gh issue comment "$ISSUE_NUMBER" --body "A pull request with this record has been opened. It goes live once a maintainer merges it."
