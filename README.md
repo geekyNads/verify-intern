@@ -11,9 +11,9 @@ what matched, linked to the public advisory it came from — not a black-box sco
 ## Just want to check an offer?
 **FORK THIS REPO then**
 
-**Open the site: `https://YOUR-USERNAME.github.io/verifyintern/`**
+**Open the site: `https://YOUR-USERNAME.github.io/verify-intern/`**
 or 
-**https://geekynads.github.io/verifyintern/**
+**https://geekynads.github.io/verify-intern/**
 
 Nothing to install, nothing to sign up for. Paste the message you received, or
 type a company name or website, and press *Check this offer*. Whatever you paste
