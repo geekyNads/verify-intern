@@ -9,7 +9,7 @@ what matched, linked to the public advisory it came from — not a black-box sco
 ---
 
 ## Just want to check an offer?
-** FORK THIS REPO then **
+**FORK THIS REPO then**
 
 **Open the site: `https://YOUR-USERNAME.github.io/verifyintern/`**
 or 
